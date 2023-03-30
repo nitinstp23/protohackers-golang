@@ -17,12 +17,23 @@ func main() {
 	}
 
 	defer l.Close()
+	log.Printf("started TCP server on port %s", port)
 
-	conn, err := l.Accept()
-	if err != nil {
-		log.Printf("failed to accept connection on port %s, error: %s", port, err)
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Printf("failed to accept connection on port %s, error: %s", port, err)
+			os.Exit(1)
+		}
+
+		go handleConnection(conn)
 	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	log.Printf("accepting new connection from %s", conn.RemoteAddr())
 
 	for {
 		netData, err := bufio.NewReader(conn).ReadString('\n')
