@@ -1,29 +1,34 @@
-package main
+package echo_server
 
 import (
 	"bufio"
 	"log"
 	"net"
-	"os"
 )
 
-func main() {
-	port := "9001"
+type TCPServer struct {
+	port string
+}
 
-	l, err := net.Listen("tcp", ":"+port)
+func NewTCPServer(port string) *TCPServer {
+	return &TCPServer{port: port}
+}
+
+func (tcp *TCPServer) Start() error {
+	l, err := net.Listen("tcp", ":"+tcp.port)
 	if err != nil {
-		log.Printf("failed to start server on port %s, error: %s", port, err)
-		os.Exit(1)
+		log.Printf("failed to start server on port %s, error: %s", tcp.port, err)
+		return err
 	}
 
 	defer l.Close()
-	log.Printf("started TCP server on port %s", port)
+	log.Printf("started TCP server on port %s", tcp.port)
 
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			log.Printf("failed to accept connection on port %s, error: %s", port, err)
-			os.Exit(1)
+			log.Printf("failed to accept connection on port %s, error: %s", tcp.port, err)
+			return err
 		}
 
 		go handleConnection(conn)
