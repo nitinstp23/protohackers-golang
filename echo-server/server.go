@@ -6,36 +6,36 @@ import (
 	"net"
 )
 
-type TCPServer struct {
+type EchoServer struct {
 	port string
 }
 
-func NewTCPServer(port string) *TCPServer {
-	return &TCPServer{port: port}
+func NewEchoServer(port string) *EchoServer {
+	return &EchoServer{port: port}
 }
 
-func (tcp *TCPServer) Start() error {
-	l, err := net.Listen("tcp", ":"+tcp.port)
+func (echoServer *EchoServer) Start() error {
+	l, err := net.Listen("tcp", ":"+echoServer.port)
 	if err != nil {
-		log.Printf("failed to start server on port %s, error: %s", tcp.port, err)
+		log.Printf("failed to start server on port %s, error: %s", echoServer.port, err)
 		return err
 	}
 
 	defer l.Close()
-	log.Printf("started TCP server on port %s", tcp.port)
+	log.Printf("started TCP server on port %s", echoServer.port)
 
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			log.Printf("failed to accept connection on port %s, error: %s", tcp.port, err)
+			log.Printf("failed to accept connection on port %s, error: %s", echoServer.port, err)
 			return err
 		}
 
-		go handleConnection(conn)
+		go echoServer.handleNewConnection(conn)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func (echoServer *EchoServer) handleNewConnection(conn net.Conn) {
 	defer conn.Close()
 
 	log.Printf("accepting new connection from %s", conn.RemoteAddr())
