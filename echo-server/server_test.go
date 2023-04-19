@@ -3,9 +3,10 @@ package echo_server_test
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"net"
+	"strings"
 	"testing"
+	"time"
 
 	echo_server "github.com/nitinstp23/protohackers-golang/echo-server"
 )
@@ -14,23 +15,21 @@ func TestStartWithOneClient(t *testing.T) {
 	port := "9001"
 	inputMessage := "foobar"
 
-	conn, _ := net.Dial("tcp", ":"+port)
-	startTCPServer(port)
-
-	fmt.Fprint(conn, inputMessage)
-	message, _ := bufio.NewReader(conn).ReadString('\n')
-
-	if message != inputMessage {
-		t.Errorf("Reply from server %q is not equal to expected %q", message, inputMessage)
-	}
-}
-
-func startTCPServer(port string) *echo_server.EchoServer {
 	server := echo_server.NewEchoServer(port)
-	if err := server.Start(); err != nil {
-		log.Printf("failed to start server on port %s, error: %s", port, err)
-		return nil
-	}
+	go server.Start()
 
-	return server
+	// wait for the server to start
+	// TODO: find a better way to do this
+	time.Sleep(1000 * time.Millisecond)
+
+	// start TCP client on server port
+	conn, _ := net.Dial("tcp", ":"+port)
+
+	fmt.Fprintln(conn, inputMessage)
+	serverReply, _ := bufio.NewReader(conn).ReadString('\n')
+	serverMessage := strings.ReplaceAll(serverReply, "\n", "")
+
+	if serverMessage != inputMessage {
+		t.Errorf("Reply from server %q is not equal to expected %q", serverMessage, inputMessage)
+	}
 }
