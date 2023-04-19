@@ -43,9 +43,7 @@ func (echoServer *EchoServer) Start() error {
 			log.Printf("stopping server on port %s", echoServer.port)
 			return nil
 		default:
-			if echoServer.TotalConnections >= echoServer.maxConnections {
-				// log.Printf("server reached max connections on port %s", echoServer.port)
-			} else {
+			if echoServer.TotalConnections < echoServer.maxConnections {
 				conn, err := listener.Accept()
 				if err != nil {
 					log.Printf("failed to accept connection on port %s, error: %s", echoServer.port, err)
